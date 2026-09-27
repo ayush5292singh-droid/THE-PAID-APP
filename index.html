@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#07101f">
+<title>FINOVA — Smart Finance</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+
+<body>
+
+<div id="toast"></div>
+
+<header class="topbar">
+    <div>
+        <div class="brand">FINOVA</div>
+        <div class="tagline">SMART MONEY OS</div>
+    </div>
+
+    <button class="icon-btn" onclick="toggleTheme()">☀️</button>
+</header>
+
+<nav class="nav">
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('transactions')">Transactions</button>
+    <button onclick="showPage('wallets')">Wallets</button>
+    <button onclick="showPage('budgets')">Budgets</button>
+    <button onclick="showPage('loans')">Loans</button>
+    <button onclick="showPage('scanner')">Scanner</button>
+    <button onclick="showPage('analytics')">Analytics</button>
+    <button onclick="showPage('more')">More</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+
+    <div class="hero">
+        <div>
+            <p class="muted">TOTAL NET WORTH</p>
+            <h1 id="netWorth">₹0</h1>
+            <p id="welcomeText">Your financial command center</p>
+        </div>
+        <div class="hero-icon">₹</div>
+    </div>
+
+    <div class="cards four">
+        <div class="card">
+            <span>Income</span>
+            <strong id="dashIncome">₹0</strong>
+        </div>
+
+        <div class="card">
+            <span>Expenses</span>
+            <strong id="dashExpense">₹0</strong>
+        </div>
+
+        <div class="card">
+            <span>Balance</span>
+            <strong id="dashBalance">₹0</strong>
+        </div>
+
+        <div class="card">
+            <span>Loan Due</span>
+            <strong id="dashLoan">₹0</strong>
+        </div>
+    </div>
+
+    <div class="quick">
+        <button class="primary" onclick="openTransaction('expense')">＋ Expense</button>
+        <button class="success" onclick="openTransaction('income')">＋ Income</button>
+        <button onclick="showPage('scanner')">🧾 Scan Receipt</button>
+        <button onclick="showPage('loans')">🏦 Pay EMI</button>
+    </div>
+
+    <div class="grid2">
+        <div class="panel">
+            <div class="panel-title">
+                <h2>Spending Overview</h2>
+                <button onclick="showPage('analytics')">View</button>
+            </div>
+            <canvas id="expenseChart"></canvas>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">
+                <h2>Recent Transactions</h2>
+                <button onclick="showPage('transactions')">All</button>
+            </div>
+            <div id="recentTransactions"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">
+            <h2>Financial Health</h2>
+            <span id="healthScore">0%</span>
+        </div>
+        <div class="progress">
+            <div id="healthBar"></div>
+        </div>
+        <p id="healthText" class="muted">Add income and expenses to calculate your financial health.</p>
+    </div>
+
+</section>
+
+
+<!-- TRANSACTIONS -->
+<section id="transactions" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Transactions</h1>
+            <p>Track every rupee.</p>
+        </div>
+
+        <button class="primary" onclick="openTransaction()">＋ Add Transaction</button>
+    </div>
+
+    <div class="filters">
+        <input id="searchTransaction" placeholder="Search transactions..." oninput="renderTransactions()">
+
+        <select id="transactionFilter" onchange="renderTransactions()">
+            <option value="all">All</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+        </select>
+    </div>
+
+    <div class="panel">
+        <div id="transactionList"></div>
+    </div>
+</section>
+
+
+<!-- WALLETS -->
+<section id="wallets" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Wallets & Accounts</h1>
+            <p>Manage cash, banks and digital money.</p>
+        </div>
+
+        <button class="primary" onclick="addWallet()">＋ Wallet</button>
+    </div>
+
+    <div id="walletList" class="cards"></div>
+</section>
+
+
+<!-- BUDGETS -->
+<section id="budgets" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Budgets</h1>
+            <p>Control your spending.</p>
+        </div>
+
+        <button class="primary" onclick="addBudget()">＋ Budget</button>
+    </div>
+
+    <div id="budgetList"></div>
+</section>
+
+
+<!-- LOANS -->
+<section id="loans" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Loans</h1>
+            <p>Track loans and pay EMIs.</p>
+        </div>
+
+        <button class="primary" onclick="openLoanForm()">＋ Add Loan</button>
+    </div>
+
+    <div id="loanList"></div>
+
+    <div class="panel">
+        <h2>EMI Calculator</h2>
+
+        <div class="form-grid">
+            <label>
+                Principal
+                <input id="calcPrincipal" type="number" placeholder="500000">
+            </label>
+
+            <label>
+                Annual Interest %
+                <input id="calcRate" type="number" step="0.01" placeholder="8.5">
+            </label>
+
+            <label>
+                Tenure (months)
+                <input id="calcMonths" type="number" placeholder="60">
+            </label>
+        </div>
+
+        <button class="primary" onclick="calculateEMI()">Calculate EMI</button>
+
+        <div id="emiResult" class="result-box">Enter loan details.</div>
+    </div>
+
+</section>
+
+
+<!-- SCANNER -->
+<section id="scanner" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Receipt Scanner</h1>
+            <p>Upload a receipt and FINOVA will try to detect the amount and category.</p>
+        </div>
+    </div>
+
+    <div class="scanner-grid">
+
+        <div class="panel scanner-upload">
+
+            <div class="scan-icon">🧾</div>
+
+            <h2>Upload Receipt</h2>
+            <p class="muted">Choose an image from your photo library.</p>
+
+            <input
+                id="receiptInput"
+                type="file"
+                accept="image/*"
+                onchange="scanReceipt(event)"
+            >
+
+            <label for="receiptInput" class="upload-btn">
+                📷 Choose Receipt
+            </label>
+
+            <div id="scanStatus"></div>
+
+            <img id="receiptPreview" class="receipt-preview">
+        </div>
+
+        <div class="panel">
+
+            <h2>Detected Expense</h2>
+
+            <label>
+                Amount
+                <input id="scanAmount" type="number" placeholder="0">
+            </label>
+
+            <label>
+                Category
+                <select id="scanCategory">
+                    <option>Food</option>
+                    <option>Transport</option>
+                    <option>Shopping</option>
+                    <option>Bills</option>
+                    <option>Entertainment</option>
+                    <option>Health</option>
+                    <option>Education</option>
+                    <option>Rent</option>
+                    <option>Travel</option>
+                    <option>Other</option>
+                </select>
+            </label>
+
+            <label>
+                Merchant
+                <input id="scanMerchant" placeholder="Merchant name">
+            </label>
+
+            <button class="primary full" onclick="addScannedExpense()">
+                ＋ Add Expense
+            </button>
+
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>How it works</h2>
+        <p>1. Upload a receipt.</p>
+        <p>2. OCR reads the image.</p>
+        <p>3. FINOVA searches the text for an amount and category clues.</p>
+        <p>4. Check the result.</p>
+        <p>5. Press <b>Add Expense</b>.</p>
+    </div>
+
+</section>
+
+
+<!-- ANALYTICS -->
+<section id="analytics" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Analytics</h1>
+            <p>Understand where your money goes.</p>
+        </div>
+    </div>
+
+    <div class="cards four">
+        <div class="card">
+            <span>Savings Rate</span>
+            <strong id="savingsRate">0%</strong>
+        </div>
+
+        <div class="card">
+            <span>Total Transactions</span>
+            <strong id="transactionCount">0</strong>
+        </div>
+
+        <div class="card">
+            <span>Top Category</span>
+            <strong id="topCategory">—</strong>
+        </div>
+
+        <div class="card">
+            <span>Loan Balance</span>
+            <strong id="loanBalance">₹0</strong>
+        </div>
+    </div>
+
+    <div class="grid2">
+        <div class="panel">
+            <h2>Category Spending</h2>
+            <canvas id="categoryChart"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>Income vs Expense</h2>
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- MORE -->
+<section id="more" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>More</h1>
+            <p>Extra FINOVA tools.</p>
+        </div>
+    </div>
+
+    <div class="feature-grid">
+
+        <button class="feature" onclick="openCalculator('compound')">
+            <b>🧮</b>
+            <span>Compound Interest</span>
+        </button>
+
+        <button class="feature" onclick="openCalculator('simple')">
+            <b>📐</b>
+            <span>Simple Interest</span>
+        </button>
+
+        <button class="feature" onclick="showPage('recurring')">
+            <b>🔄</b>
+            <span>Recurring Payments</span>
+        </button>
+
+        <button class="feature" onclick="showPage('goals')">
+            <b>🎯</b>
+            <span>Savings Goals</span>
+        </button>
+
+        <button class="feature" onclick="backupData()">
+            <b>💾</b>
+            <span>Backup Data</span>
+        </button>
+
+        <button class="feature" onclick="restoreData()">
+            <b>♻️</b>
+            <span>Restore Data</span>
+        </button>
+
+        <button class="feature" onclick="showPage('pro')">
+            <b>⭐</b>
+            <span>FINOVA Pro</span>
+        </button>
+
+        <button class="feature" onclick="resetData()">
+            <b>⚠️</b>
+            <span>Reset Data</span>
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- GOALS -->
+<section id="goals" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Savings Goals</h1>
+            <p>Turn plans into progress.</p>
+        </div>
+
+        <button class="primary" onclick="addGoal()">＋ Goal</button>
+    </div>
+
+    <div id="goalList"></div>
+
+</section>
+
+
+<!-- RECURRING -->
+<section id="recurring" class="page">
+
+    <div class="page-head">
+        <div>
+            <h1>Recurring Payments</h1>
+            <p>Never forget regular expenses.</p>
+        </div>
+
+        <button class="primary" onclick="addRecurring()">＋ Payment</button>
+    </div>
+
+    <div id="recurringList"></div>
+
+</section>
+
+
+<!-- PRO -->
+<section id="pro" class="page">
+
+    <div class="pro-card">
+
+        <div class="pro-badge">FINOVA PRO</div>
+
+        <h1>Unlock the full FINOVA experience.</h1>
+
+        <p class="muted">
+            Advanced tools for people who want deeper control over their finances.
+        </p>
+
+        <div class="pricing">
+
+            <div class="price">
+                <span>Monthly</span>
+                <strong>₹99</strong>
+                <small>per month</small>
+            </div>
+
+            <div class="price featured">
+                <span>Yearly</span>
+                <strong>₹1,100</strong>
+                <small>per year</small>
+            </div>
+
+        </div>
+
+        <div class="pro-features">
+
+            <div>✓ Advanced analytics</div>
+            <div>✓ Advanced receipt tools</div>
+            <div>✓ Unlimited wallets</div>
+            <div>✓ Unlimited savings goals</div>
+            <div>✓ Advanced reports</div>
+            <div>✓ AI-assisted spending insights</div>
+            <div>✓ Premium themes</div>
+            <div>✓ Cloud backup — when connected</div>
+
+        </div>
+
+        <button class="primary full" onclick="showToast('Google Play subscription will be connected in the Android release.')">
+            ⭐ Choose FINOVA Pro
+        </button>
+
+        <p class="tiny">
+            Pricing shown in the app: ₹99/month or ₹1,100/year.
+        </p>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- TRANSACTION MODAL -->
+<div id="transactionModal" class="modal">
+
+    <div class="modal-box">
+
+        <button class="close" onclick="closeModal('transactionModal')">×</button>
+
+        <h2>Add Transaction</h2>
+
+        <div class="tabs">
+            <button id="expenseTab" class="active" onclick="setTransactionType('expense')">Expense</button>
+            <button id="incomeTab" onclick="setTransactionType('income')">Income</button>
+        </div>
+
+        <label>
+            Amount
+            <input id="transactionAmount" type="number" placeholder="0">
+        </label>
+
+        <label>
+            Category
+            <select id="transactionCategory">
+                <option>Food</option>
+                <option>Transport</option>
+                <option>Shopping</option>
+                <option>Bills</option>
+                <option>Entertainment</option>
+                <option>Health</option>
+                <option>Education</option>
+                <option>Rent</option>
+                <option>Salary</option>
+                <option>Investment</option>
+                <option>Travel</option>
+                <option>Other</option>
+            </select>
+        </label>
+
+        <label>
+            Note
+            <input id="transactionNote" placeholder="What was this for?">
+        </label>
+
+        <label>
+            Wallet
+            <select id="transactionWallet"></select>
+        </label>
+
+        <button class="primary full" onclick="saveTransaction()">Save Transaction</button>
+
+    </div>
+
+</div>
+
+
+<!-- LOAN MODAL -->
+<div id="loanModal" class="modal">
+
+    <div class="modal-box">
+
+        <button class="close" onclick="closeModal('loanModal')">×</button>
+
+        <h2>Add Loan</h2>
+
+        <label>
+            Loan Name
+            <input id="loanName" placeholder="Home Loan">
+        </label>
+
+        <label>
+            Principal
+            <input id="loanPrincipal" type="number" placeholder="500000">
+        </label>
+
+        <label>
+            Annual Interest %
+            <input id="loanRate" type="number" step="0.01" placeholder="8.5">
+        </label>
+
+        <label>
+            Tenure (months)
+            <input id="loanMonths" type="number" placeholder="60">
+        </label>
+
+        <button class="primary full" onclick="saveLoan()">Create Loan</button>
+
+    </div>
+
+</div>
+
+
+<!-- CALCULATOR MODAL -->
+<div id="calculatorModal" class="modal">
+
+    <div class="modal-box">
+
+        <button class="close" onclick="closeModal('calculatorModal')">×</button>
+
+        <h2 id="calculatorTitle">Calculator</h2>
+
+        <label>
+            Principal
+            <input id="ciPrincipal" type="number">
+        </label>
+
+        <label>
+            Rate %
+            <input id="ciRate" type="number" step="0.01">
+        </label>
+
+        <label>
+            Time (years)
+            <input id="ciTime" type="number" step="0.1">
+        </label>
+
+        <button class="primary full" onclick="runCalculator()">Calculate</button>
+
+        <div id="calculatorResult" class="result-box"></div>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
